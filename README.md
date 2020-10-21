@@ -17,7 +17,7 @@ MASTER will calculate how many shards to allocate to each machine based on how m
 MASTER will request this information from each CONTROL process and use the following formula to produce a ratio that determines how many shards to assign:<br>
 `Core Count / Load Avg`
 
-The MASTER server will then send the shard count for each CONTROL back to the respective processes.<br>
+The MASTER server will then send the shard count for each CONTROL, as well as the bot token, back to the respective processes.<br>
 After sending allocated shards to all CONTROL processes, MASTER will then send a packet to the first CONTROL server indicating that it should start connecting its clusters. Once done, the CONTROL server will send a packet back, allowing MASTER to signal that the second CONTROL server can connect, and so on. This is because Discord limits shard connections to [1 per 5 seconds](https://discord.com/developers/docs/topics/gateway#identifying), so not all clusters can connect at once.
 
 The CONTROL is then responsible for the initialisation of clusters. More on this in the CONTROL repository.

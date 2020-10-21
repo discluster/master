@@ -24,3 +24,5 @@ The MASTER server will then send the shard count for each CONTROL back to the re
 Under normal operation, MASTER only has a limited amount of roles. One main role is to keep track of currently operating CONTROL processes and monitor them in case one fails.<br>
 If this happens, MASTER will automatically offload the shards managed by that CONTROL to other currently functioning CONTROL processes (provided they exist).<br>
 CONTROL processes may still operate if the MASTER server is down, but the system may become unstable if left offline for too long because dead clusters will not be moved to a different machine.
+
+MASTER also supports redundant machines, which essentially act as standby in case an active machine fails for any reason. If that happens, the shards allocated that machine will be re-allocated to one of the standby machines. This will minimise the amount of downtime guilds served by those shards will experience.

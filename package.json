@@ -1,0 +1,24 @@
+{
+  "name": "discluster-master",
+  "version": "0.0.1",
+  "description": "The Discluster MASTER server",
+  "main": "index.js",
+  "dependencies": {
+    "@types/node": "^14.14.5",
+    "@types/ws": "^7.2.8",
+    "ws": "^7.3.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/discluster/master.git"
+  },
+  "author": "Jacherr",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/discluster/master/issues"
+  },
+  "homepage": "https://github.com/discluster/master#readme"
+}

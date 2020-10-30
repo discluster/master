@@ -5,12 +5,16 @@ import { SocketServer } from './socketserver';
 
 export interface MasterServerOptions {
     /**
+     * The authorization header CONTROL servers must send in order to connect. Strongly recommended.
+     */
+    authorization?: string
+    /**
      * The port to listen on. Defaults to 8642.
      */
     port?: number
 }
 
-export interface Master {
+export interface MasterServer {
     on(event: 'controlConnect', listener: (code: number, reason: string) => void): this;
 }
 
@@ -20,6 +24,7 @@ export interface Master {
  * @prop token The token to authenticate with
  */
 export class MasterServer extends EventEmitter {
+    readonly authorization?: string;
     readonly port: number;
     readonly token: string;
 
@@ -33,6 +38,7 @@ export class MasterServer extends EventEmitter {
     */
     constructor(token: string, options: MasterServerOptions) {
         super();
+        this.authorization = options.authorization;
         this.port = options.port || DEFAULT_PORT;
         this.token = token;
     }
@@ -44,6 +50,6 @@ export class MasterServer extends EventEmitter {
      * {@link https://github.com/discluster/master/README.md The README} holds more detailed information.
      */
     public async initialise() {
-        
+
     }
 }

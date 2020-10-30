@@ -4,7 +4,7 @@ This is the repository for the MASTER server for a Discluster system. It contain
 
 ## Basic Mechanism
 
-When the MASTER server is started, it will await connections from CONTROL processes. CONTROL processes will attempt to connect to the MASTER server every 30 seconds if they are not connected.<br>
+When the MASTER server is started, it will await connections from CONTROL processes. CONTROL processes will attempt to connect to the MASTER server every 30 seconds if they are not connected. All CONTROL processes must send an authorization header with the connection, if one is provided in MASTER configuration.<br>
 MASTER will send an acknowledgement packet back to the CONTROL processes to indicate that they should wait for further instructions.<br>
 Subsequently, the MASTER will wait 45 seconds before assuming all CONTROL processes are connected and proceed to initialise the CONTROL processes.
 

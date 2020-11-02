@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import { MasterServer } from './master';
 import { SocketServerStates, CLOSE_CODES } from './constants';
-import { IncomingMessage, STATUS_CODES } from 'http';
+import { IncomingMessage } from 'http';
 
 export interface SocketServer {
     on(event: 'establish', listener: () => void): this;
@@ -70,12 +70,20 @@ export class SocketServer extends EventEmitter {
         const authorization = request.headers.authorization;
         if(this.master.authorization) {
             if(!authorization || authorization !== this.master.authorization) {
-                return socket.close(CLOSE_CODES.UNAUTHORIZED, STATUS_CODES[CLOSE_CODES.UNAUTHORIZED])
+                return socket.close(CLOSE_CODES.unauthorized.code, CLOSE_CODES.unauthorized.message)
             }
         }
-
-        
+        this.send(socket, '');
 
         this.sockets.push(socket);
+    }
+
+    public async send(socket: WebSocket, data: any) {
+        return new Promise((resolve, reject) => {
+            socket.send(data, (err) => {
+                if(err) reject(err);
+                resolve();
+            })
+        });
     }
 }

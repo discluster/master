@@ -1,21 +1,24 @@
 import { EventEmitter } from 'events';
 import WebSocket from 'ws';
 import { MasterServer } from './master';
-import { SocketServerStates, CLOSE_CODES } from './constants';
+import { SocketServerStates, CLOSE_CODES, PACKET_OPCODES } from './constants';
 import { IncomingMessage } from 'http';
+import { Packet } from './types';
 
 export interface SocketServer {
     on(event: 'establish', listener: () => void): this;
 }
 
 export class SocketServer extends EventEmitter {
+    readonly heartbeatInterval: number;
     readonly master: MasterServer;
     private _server!: WebSocket.Server;
     private _sockets: WebSocket[] = [];
     private _state: SocketServerStates = SocketServerStates.CLOSED;
 
-    constructor(master: MasterServer) {
+    constructor(master: MasterServer, heartbeatInterval: number) {
         super();
+        this.heartbeatInterval = heartbeatInterval;
         this.master = master;
     }
 
@@ -35,6 +38,9 @@ export class SocketServer extends EventEmitter {
         return this._state;
     }
 
+    /**
+     * Closes the socket server and disconnects all CONTROL servers.
+     */
     public async close() {
         if(this.state === SocketServerStates.CLOSED) {
             throw new Error('This SocketServer is already closed')
@@ -59,9 +65,13 @@ export class SocketServer extends EventEmitter {
         })
     }
 
-    public async establish(port: number) {
+    /**
+     * Establishes the socket server and begins listening for CONTROL server connections.
+     */
+    public async establish() {
         this._state = SocketServerStates.ESTABLISHING;
-        await this.createWebsocketServer(port);
+        await this.createWebsocketServer(this.master.port);
+        this._state = SocketServerStates.AWAITING_CLIENTS;
         this.server.on('connection', this.onConnection.bind(this));
     }
 
@@ -73,17 +83,27 @@ export class SocketServer extends EventEmitter {
                 return socket.close(CLOSE_CODES.unauthorized.code, CLOSE_CODES.unauthorized.message)
             }
         }
-        this.send(socket, '');
+        this.sendInitialisePacket(socket);
 
         this.sockets.push(socket);
     }
 
-    public async send(socket: WebSocket, data: any) {
+    public send(socket: WebSocket, data: Packet): Promise<void> {
         return new Promise((resolve, reject) => {
-            socket.send(data, (err) => {
+            socket.send(JSON.stringify(data), (err) => {
                 if(err) reject(err);
                 resolve();
             })
         });
+    }
+
+    public sendInitialisePacket(socket: WebSocket) {
+        return this.send(socket, {
+            d: {
+                token: this.master.token,
+                heartbeat_interval: 50000
+            },
+            o: PACKET_OPCODES.initialise
+        })
     }
 }

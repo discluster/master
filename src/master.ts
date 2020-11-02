@@ -9,6 +9,10 @@ export interface MasterServerOptions {
      */
     authorization?: string
     /**
+     * The interval at which CONTROL servers must heartbeat to MASTER in order to stay connected.
+     */
+    heartbeatInterval?: number
+    /**
      * The port to listen on. Defaults to 8642.
      */
     port?: number
@@ -28,7 +32,7 @@ export class MasterServer extends EventEmitter {
     readonly port: number;
     readonly token: string;
 
-    public socketServer: SocketServer = new SocketServer(this);
+    public socketServer: SocketServer;
 
     /**
     * Creates a new MasterServer instance.
@@ -40,6 +44,7 @@ export class MasterServer extends EventEmitter {
         super();
         this.authorization = options.authorization;
         this.port = options.port || DEFAULT_PORT;
+        this.socketServer = new SocketServer(this, options.heartbeatInterval || 25000);
         this.token = token;
     }
 

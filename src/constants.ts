@@ -2,10 +2,20 @@ export const CLOSE_CODES = Object.freeze({
     unauthorized: {
         message: 'Unauthorized',
         code: 4001
+    },
+    malformedConnectionRequest: {
+        message: 'Malformed Connection Request',
+        code: 4002
+    },
+    alreadyConnected: {
+        message: 'This host is already connected to this MASTER server',
+        code: 4003
     }
 })
 
 export const DEFAULT_PORT = 8642;
+
+export const IP_ADDR_HEADER_NAME = 'source';
 
 export const PACKET_OPCODES = Object.freeze({
     0: 'info',
@@ -14,12 +24,14 @@ export const PACKET_OPCODES = Object.freeze({
     3: 'offload',
     4: 'shutdown',
     5: 'initialise',
+    6: 'connect',
     info: 0,
     fatal: 1,
     command: 2,
     offload: 3,
     shutdown: 4,
-    initialise: 5
+    initialise: 5,
+    connect: 6
 })
 
 export enum SocketServerStates {

@@ -15,7 +15,18 @@ export interface Packet {
 }
 
 export namespace PacketFormats {
-    export interface Initialise {
+    export interface Connect extends Packet {
+        d: {
+            shardRange: [number, number] | [],
+            redundant: boolean
+        }
+    }
+    export interface Error extends Packet {
+        d: {
+            message: string
+        }
+    }
+    export interface Initialise extends Packet {
         d: {
             token: string,
             heartbeat_interval: number

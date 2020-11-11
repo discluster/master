@@ -25,13 +25,17 @@ export const PACKET_OPCODES = Object.freeze({
     4: 'shutdown',
     5: 'initialise',
     6: 'connect',
+    7: 'error',
+    8: 'ack',
     info: 0,
     fatal: 1,
     command: 2,
     offload: 3,
     shutdown: 4,
     initialise: 5,
-    connect: 6
+    connect: 6,
+    error: 7,
+    ack: 8
 })
 
 export enum SocketServerStates {

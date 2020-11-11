@@ -29,7 +29,8 @@ export namespace PacketFormats {
     export interface Initialise extends Packet {
         d: {
             token: string,
-            heartbeat_interval: number
+            heartbeat_interval: number,
+            shard_count: number
         }
     }
 }

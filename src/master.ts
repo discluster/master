@@ -31,8 +31,14 @@ export class MasterServer extends EventEmitter {
     readonly authorization?: string;
     readonly port: number;
     readonly token: string;
+    
+    private _shardCount!: number;
 
     public socketServer: SocketServer;
+
+    get shardCount() {
+        return this._shardCount;
+    }
 
     /**
     * Creates a new MasterServer instance.
@@ -55,6 +61,10 @@ export class MasterServer extends EventEmitter {
      * {@link https://github.com/discluster/master/README.md The README} holds more detailed information.
      */
     public async initialise() {
-
+        /*
+            1. fetch recommended shards
+            2. await control connections for 45 seconds
+            3. send connect instructions to each control server synchronously
+        */
     }
 }

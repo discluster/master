@@ -102,9 +102,9 @@ export class SocketServer extends EventEmitter {
             return socket.close(CLOSE_CODES.alreadyConnected.code, CLOSE_CODES.alreadyConnected.message);
         }
 
-        this.sendInitialisePacket(socket);
-
-        this.controlServers.set(sourceIp, new Control(this, socket, sourceIp));
+        const control = new Control(this, socket, sourceIp);
+        control.sendInitialise();
+        this.controlServers.set(sourceIp, control);
     }
 
     public send<T = Packet>(socket: WebSocket, data: T): Promise<void> {
@@ -114,15 +114,5 @@ export class SocketServer extends EventEmitter {
                 resolve();
             })
         });
-    }
-
-    public sendInitialisePacket(socket: WebSocket) {
-        return this.send<PacketFormats.Initialise>(socket, {
-            d: {
-                token: this.master.token,
-                heartbeat_interval: 50000
-            },
-            o: PACKET_OPCODES.initialise
-        })
     }
 }

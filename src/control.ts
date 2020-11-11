@@ -3,7 +3,12 @@ import { SocketServer } from './socketserver';
 import { Packet, PacketFormats } from './types';
 import { PACKET_OPCODES } from './constants';
 import { EventEmitter } from 'events';
-import { type } from 'os';
+
+export enum ControlStates {
+    INITIALISING,
+    INITIALISED,
+    CONNECTED
+}
 
 /**
  * Represents a CONTROL server as the MASTER server sees it.
@@ -17,6 +22,7 @@ export class Control extends EventEmitter {
     public server: SocketServer;
     public shardRange?: [number, number];
     public socket: WebSocket;
+    public state: ControlStates = ControlStates.INITIALISING
 
     constructor(server: SocketServer, socket: WebSocket, ip: string) {
         super();
@@ -31,7 +37,7 @@ export class Control extends EventEmitter {
         this.shardRange = shardRange;
         return new Promise(async (resolve, reject) => {
             await this.sendConnect();
-
+            this.finishedConnectingResolve = resolve;
         })
     }
 
@@ -49,15 +55,31 @@ export class Control extends EventEmitter {
     public sendConnect() {
         // checks if a shard range is defined. if its not, this server is redundant.
         return this.send<PacketFormats.Connect>({
-            o: PACKET_OPCODES.connect,
             d: {
                 shardRange: this.shardRange || [],
                 redundant: this.shardRange ? false : true
-            }
+            },
+            o: PACKET_OPCODES.connect
         })
     }
 
     public sendError(message: string) {
+        return this.send<PacketFormats.Error>({
+            d: {
+                message
+            },
+            o: PACKET_OPCODES.fatal
+        })
+    }
 
+    public sendInitialise() {
+        return this.send<PacketFormats.Initialise>({
+            d: {
+                token: this.server.master.token,
+                heartbeat_interval: 50000,
+                shard_count: this.server.master.shardCount
+            },
+            o: PACKET_OPCODES.initialise
+        })
     }
 }

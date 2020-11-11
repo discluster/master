@@ -12,7 +12,7 @@ This packet will conain the following information:
 
     - The interval at which the CONTROL server should heartbeat to MASTER. (More on heartbeating below)
     - The Discord bot token the CONTROL server's clusters should use.
-    - How many clusters the CONTROL server should spawn, if any.
+    - The total shard count of this system.
 
 The exact form of this data is detailed in the documentation (soon).<br>
 This packet marks the end of connection-triggered communication between MASTER and CONTROL.
@@ -30,3 +30,16 @@ If MASTER detects that a CONTROL server has not sent a heartbeat in longer than 
 There is a chance that a CONTROL server will disconnect from MASTER just due to transient bugs in transit. In which case, CONTROL may re-attempt to connect to MASTER with a different connection packet that contains information on what shard range it is serving so that MASTER may identify it. However, if no connection is attempted in 30 seconds, MASTER will begin the cluster offloading procedure.
 
 Zombified sockets refer to CONTROL servers that are connected to MASTER but do not send packets to MASTER. In such cases, the socket will be closed with close code 4001 (Dead connection).
+
+## Additional Communication
+
+### Connecting a CONTROL's clusters
+
+After 45 seconds have passed, the MASTER server will begin sending a packet to each CONTROL server in turn.<br>
+This packet will signal that the CONTROL server should connect its clusters to the Discord gateway. Immediately after recieving the packet, CONTROL will send back a packet indicating it has started connecting its clusters.<br>
+The packet contains the following information:
+
+    - The range of shards that this CONTROL server should serve with its clusters.
+    - Whether this CONTROL server is redundant.
+
+The CONTROL server will then spawn clusters and connect their shards to the Discord gateway before sending a packet back indicating that it is done. Only then will the MASTER server instruct the next CONTROL server to initialise its clusters.

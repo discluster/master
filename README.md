@@ -6,21 +6,18 @@ This is the repository for the MASTER server for a Discluster system. It contain
 
 When the MASTER server is started, it will await connections from CONTROL processes. CONTROL processes will attempt to connect to the MASTER server every 30 seconds if they are not connected. All CONTROL processes must send an authorization header with the connection, if one is provided in MASTER configuration.<br>
 MASTER will send an acknowledgement packet back to the CONTROL processes to indicate that they should wait for further instructions.<br>
-Subsequently, the MASTER will wait 45 seconds before assuming all CONTROL processes are connected and proceed to initialise the CONTROL processes.
+Subsequently, the MASTER will wait 45 seconds before assuming all CONTROL processes are connected and proceed to instruct the CONTROL processes.
 
-### Initialisation
+### MASTER Initialisation
 
 The first thing MASTER will do is fetch the [recommended amount of shards for this bot from the Discord REST API](https://discord.com/developers/docs/topics/gateway#get-gateway-bot).<br>
 MASTER will use this number to calculate how many shards should be distributed to each machine.
 
-MASTER will calculate how many shards to allocate to each machine based on how many machines there are, as well as the current 15-minute load-average for each machine, as well as the amount of CPU cores available on each machine.<br>
-MASTER will request this information from each CONTROL process and use the following formula to produce a ratio that determines how many shards to assign:<br>
-`Core Count / Load Avg`
+The MASTER server will then await conenctions from CONTROL servers for a maximum of 45 seconds. When a CONTROL server connects, it will send information about the IP it is connecting from, as well as some basic system information used for shard balancing calculations by MASTER. On a successful connection, MASTER will immediately send a packet to thr CONTROL server with the bot token, heartbeat interval, and total shard count of the **whole system**.
 
-The MASTER server will then send the shard count for each CONTROL, as well as the bot token, back to the respective processes.<br>
-After sending allocated shards to all CONTROL processes, MASTER will then send a packet to the first CONTROL server indicating that it should start connecting its clusters. Once done, the CONTROL server will send a packet back, allowing MASTER to signal that the second CONTROL server can connect, and so on. This is because Discord limits shard connections to [1 per 5 seconds](https://discord.com/developers/docs/topics/gateway#identifying), so not all clusters can connect at once.
+Once the 45 seconds is up, MASTER will then send a packet to each CONTROL in turn, and wait for a response packet before sending the packet to the next server. This packet indicates that the CONTROL server should spawn clusters and connect them to the Discord gateway, and as such it holds information regarding what shards it is handling in its clusters (or if it's redundant).
 
-The CONTROL is then responsible for the initialisation of clusters. More on this in the CONTROL repository.
+The initialisation of clusters is discussed in more detail in the CONTROL repository.
 
 ### Operation
 

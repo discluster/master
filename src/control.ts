@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { SocketServer } from './socketserver';
 import { Packet, PacketFormats } from './types';
-import { PACKET_OPCODES } from './constants';
+import { PACKET_OPCODES, CLOSE_CODES, VALID_CONTROL_OPCODES } from './constants';
 import { EventEmitter } from 'events';
 
 export enum ControlStates {
@@ -46,9 +46,9 @@ export class Control extends EventEmitter {
     }
 
     private onMessage(data: WebSocket.Data) {
-        // all normal packets should be string as raw (JSON when parsed), send back error packet if they arent
-        if(typeof data !== 'string') {
-
+        const validPacket = this.validatePacket(data);
+        if(!validPacket) {
+            this.sendMalformedPacketError();
         }
     }
 
@@ -63,12 +63,13 @@ export class Control extends EventEmitter {
         })
     }
 
-    public sendError(message: string) {
+    public sendError(code: number, message: string, op: number = PACKET_OPCODES.error) {
         return this.send<PacketFormats.Error>({
             d: {
+                code,
                 message
             },
-            o: PACKET_OPCODES.fatal
+            o: op
         })
     }
 
@@ -81,5 +82,29 @@ export class Control extends EventEmitter {
             },
             o: PACKET_OPCODES.initialise
         })
+    }
+
+    public sendMalformedPacketError() {
+        return this.sendError(CLOSE_CODES.malformedPacket.code, CLOSE_CODES.malformedPacket.message);
+    }
+
+    private validatePacket(data: WebSocket.Data): Packet | null {
+        // all normal packets should be string as raw (JSON when parsed), send back error packet if they arent
+        if(typeof data !== 'string') {
+            return null;
+        }
+
+        let packet: Packet;
+        try {
+            packet = JSON.parse(data);
+        } catch {
+            return null;
+        }
+
+        if(!packet.o || !VALID_CONTROL_OPCODES.has(packet.o)) {
+            return null;
+        }
+
+        return packet;
     }
 }

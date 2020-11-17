@@ -23,6 +23,7 @@ export namespace PacketFormats {
     }
     export interface Error extends Packet {
         d: {
+            code: number,
             message: string
         }
     }

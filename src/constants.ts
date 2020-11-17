@@ -10,6 +10,10 @@ export const CLOSE_CODES = Object.freeze({
     alreadyConnected: {
         message: 'This host is already connected to this MASTER server',
         code: 4003
+    },
+    malformedPacket: {
+        message: 'The server recieved a malformed packet',
+        code: 4004
     }
 })
 
@@ -37,6 +41,13 @@ export const PACKET_OPCODES = Object.freeze({
     error: 7,
     ack: 8
 })
+
+export const VALID_CONTROL_OPCODES = new Set([
+    PACKET_OPCODES.info,
+    PACKET_OPCODES.fatal,
+    PACKET_OPCODES.error,
+    PACKET_OPCODES.ack
+])
 
 export enum SocketServerStates {
     ESTABLISHING,

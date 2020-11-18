@@ -1,7 +1,7 @@
 import WebSocket from 'ws';
 import { SocketServer } from './socketserver';
 import { Packet, PacketFormats } from './types';
-import { PACKET_OPCODES, CLOSE_CODES, VALID_CONTROL_OPCODES } from './constants';
+import { PACKET_OPCODES, CLOSE_CODES } from './constants';
 import { EventEmitter } from 'events';
 
 export enum ControlStates {
@@ -46,9 +46,27 @@ export class Control extends EventEmitter {
     }
 
     private onMessage(data: WebSocket.Data) {
-        const validPacket = this.validatePacket(data);
-        if(!validPacket) {
-            this.sendMalformedPacketError();
+        const packet = this.validatePacket(data);
+        if(packet === null) {
+            return this.sendMalformedPacketError();
+        }
+
+        switch(packet.o) {
+            case PACKET_OPCODES.error: {
+                break;
+            }
+            case PACKET_OPCODES.fatal: {
+                break;
+            }
+            case PACKET_OPCODES.ack: {
+                break;
+            }
+            case PACKET_OPCODES.info: {
+                break;
+            }
+            default: {
+                return this.sendMalformedPacketError();
+            }
         }
     }
 
@@ -101,7 +119,7 @@ export class Control extends EventEmitter {
             return null;
         }
 
-        if(!packet.o || !VALID_CONTROL_OPCODES.has(packet.o)) {
+        if(!packet.o) {
             return null;
         }
 

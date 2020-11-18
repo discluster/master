@@ -42,13 +42,6 @@ export const PACKET_OPCODES = Object.freeze({
     ack: 8
 })
 
-export const VALID_CONTROL_OPCODES = new Set([
-    PACKET_OPCODES.info,
-    PACKET_OPCODES.fatal,
-    PACKET_OPCODES.error,
-    PACKET_OPCODES.ack
-])
-
 export enum SocketServerStates {
     ESTABLISHING,
     AWAITING_CLIENTS,
